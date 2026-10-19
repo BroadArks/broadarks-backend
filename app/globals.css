@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+/* ============================================================
+   broadarks-backend - admin panel design tokens
+   Shares the BroadArks palette (indigo #2E3191 / sky #27AAE1)
+   but tuned for a dense, functional dashboard UI.
+   ============================================================ */
+@theme {
+  --font-family-sans: var(--font-body, "Inter"), system-ui, sans-serif;
+  --font-family-body: var(--font-body, "Inter"), system-ui, sans-serif;
+  --font-family-heading: var(--font-heading, "Manrope"), system-ui, sans-serif;
+  --font-family-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  --color-primary-50: #eeeef8;
+  --color-primary-100: #d4d5ef;
+  --color-primary-200: #b0b2e2;
+  --color-primary-300: #8b8ed5;
+  --color-primary-400: #6669c4;
+  --color-primary-500: #2e3191;
+  --color-primary-600: #272a7e;
+  --color-primary-700: #1f2267;
+  --color-primary-800: #171950;
+  --color-primary-900: #0f113a;
+
+  --color-secondary-50: #e8f6fd;
+  --color-secondary-100: #c4e8f9;
+  --color-secondary-200: #92d5f4;
+  --color-secondary-300: #5ec0ed;
+  --color-secondary-400: #32b4e8;
+  --color-secondary-500: #27aae1;
+  --color-secondary-600: #208fc0;
+  --color-secondary-700: #19729a;
+
+  --color-navy: #0a0b1f;
+
+  --color-ink: #14152e;
+  --color-surface: #f7f9fc;
+
+  --color-neutral-50: #f4f6f9;
+  --color-neutral-100: #e8ecf2;
+  --color-neutral-200: #d1d8e6;
+  --color-neutral-300: #b3bdd0;
+  --color-neutral-400: #8e9cb8;
+  --color-neutral-500: #6b7a98;
+  --color-neutral-600: #53607c;
+  --color-neutral-700: #3f4b61;
+  --color-neutral-800: #2b3247;
+  --color-neutral-900: #1a1f2e;
+
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+
+  --shadow-card: 0 4px 24px 0 rgba(20, 21, 46, 0.06), 0 1px 4px 0 rgba(20, 21, 46, 0.04);
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer utilities {
+  .font-heading {
+    font-family: var(--font-family-heading);
+  }
+  .font-body {
+    font-family: var(--font-family-body);
+  }
+  .font-mono {
+    font-family: var(--font-family-mono);
+  }
+  .font-500 { font-weight: 500; }
+  .font-600 { font-weight: 600; }
+  .font-700 { font-weight: 700; }
+  .font-800 { font-weight: 800; }
+}
