@@ -6,9 +6,9 @@
    but tuned for a dense, functional dashboard UI.
    ============================================================ */
 @theme {
-  --font-family-sans: var(--font-body, "Inter"), system-ui, sans-serif;
-  --font-family-body: var(--font-body, "Inter"), system-ui, sans-serif;
-  --font-family-heading: var(--font-heading, "Manrope"), system-ui, sans-serif;
+  --font-family-sans: "Inter Variable", "Inter", system-ui, sans-serif;
+  --font-family-body: "Inter Variable", "Inter", system-ui, sans-serif;
+  --font-family-heading: "Manrope Variable", "Manrope", system-ui, sans-serif;
   --font-family-mono: ui-monospace, "SF Mono", Menlo, monospace;
 
   --color-primary-50: #eeeef8;
