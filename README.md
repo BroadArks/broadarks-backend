@@ -1,85 +1,89 @@
-# BroadArks Admin (`broadarks-backend`)
+# BroadArks Admin
 
-A small, secure Next.js admin panel for the **broadarks.com** website. It does one
-job: shows the **applications** and **contact-form enquiries** people submit on the
-site. No blog, no content editing.
+Admin panel for the **BroadArks** (broadarks.com) website. It shows the **contact-form enquiries** and
+**applications** people submit on the site — nothing else (no blog, no content editing).
 
-- 📬 **Submissions** inbox — contact forms and applications in one list, with
-  tabs (All / Contact forms / Applications), search, and status (new / read / archived).
-- 👑 **One super admin** (enforced by the database) who can give people access,
-  reset anyone's password, disable/enable accounts, delete accounts and submissions,
-  and choose who is shown on the forgot-password page.
-- 👤 **Admins** can view and triage submissions and manage their own profile/password.
-- 🔑 **Forgot password?** — no email reset flow. The page lists the contact people
-  (name, email, phone) to ask for a reset.
-- 🔐 Passwords hashed with PBKDF2; resetting a password or disabling an account
-  signs that person out of every device immediately.
+Built with Next.js 16 + Supabase. Runs on **http://localhost:3011**.
 
----
+## Features
 
-## 1. Set up Supabase
+- **Submissions inbox** — contact forms and applications in one list, filterable by type
+  and status (new / read / archived), with search.
+- **One super admin** — enforced by the database. Gives people access, resets passwords,
+  disables or deletes accounts, deletes submissions, and picks who is listed on the
+  forgot-password page.
+- **Admins** — view and triage submissions; edit their own profile and password.
+- **Forgot password** — no email reset. The page lists the people to contact (name,
+  email, phone) for a reset. If no one is chosen, it shows the super admin.
+- **Instant sign-out** — resetting a password or disabling an account ends that
+  person's sessions on every device.
 
-1. Create a project at [supabase.com](https://supabase.com) — or reuse the Y&Now one;
-   all tables here are prefixed `ba_`, so nothing clashes.
-2. **SQL Editor → New query**, paste [`supabase/setup.sql`](supabase/setup.sql), **Run**.
-   That creates:
+| | Super admin | Admin |
+| --- | :---: | :---: |
+| View submissions, mark read / new / archived | ✓ | ✓ |
+| Delete submissions | ✓ | |
+| Edit own profile, change own password | ✓ | ✓ |
+| Add, disable, delete accounts; reset passwords | ✓ | |
+| Choose forgot-password contacts | ✓ | |
 
-   | table | purpose |
-   | --- | --- |
-   | `ba_admin_users` | panel logins: `username`, `full_name`, `email`, `phone`, `role` (`super_admin`/`admin`), `is_active`, `is_reset_contact`, `password_hash`, `session_version`, `last_login_at` |
-   | `ba_submissions` | form submissions: `kind` (`contact`/`application`), `name`, `email`, `phone`, `organisation`, `topics[]`, `message`, `position`, `resume_url`, `details` (jsonb), `source_page`, `status`, `created_at` |
-
-   …and seeds the super admin:
-
-   | Username | Password |
-   | --- | --- |
-   | `superadmin` | `ChangeMe@2026` |
-
-   > **Sign in and change this password immediately** (My account → Change password),
-   > and set your real name / email / phone — they appear on the forgot-password page.
-
-[`supabase/admin-queries.sql`](supabase/admin-queries.sql) has ready-made queries for
-the SQL Editor (reset a locked-out super admin, hand over the super admin role, list
-new submissions, …).
-
-## 2. Environment variables
-
-```bash
-cp .env.example .env.local
-```
-
-| Variable | Where |
-| --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API → Project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon public key (not used by the panel itself, kept for parity) |
-| `SUPABASE_SERVICE_ROLE_KEY` | service_role key — **server only, keep secret** |
-| `AUTH_SECRET` | long random string — `openssl rand -hex 32` |
-
-## 3. Run it
+## Quick start
 
 ```bash
 npm install
-npm run dev        # http://localhost:3011
+cp .env.example .env.local   # then fill it in, see below
+npm run dev                  # http://localhost:3011
 ```
 
-## 4. Connect the website
+### 1. Database
 
-The contact form in the `brobro` site posts straight to Supabase with the **anon** key.
-In `brobro/.env.local` set:
+This panel shares the **Y&Now Supabase project**. Its tables are prefixed `ba_` so they
+never touch the Y&Now tables (`posts`, `admin_users`, `enquiries`).
+
+In Supabase → **SQL Editor → New query**, paste [`supabase/setup.sql`](supabase/setup.sql)
+and **Run**. It's safe to re-run. It creates:
+
+| Table | Holds |
+| --- | --- |
+| `ba_admin_users` | Panel logins, roles, contact details, access flags |
+| `ba_submissions` | Form submissions from the website |
+
+It also seeds the super admin login:
+
+| Username | Password |
+| --- | --- |
+| `superadmin` | `ChangeMe@2026` |
+
+> Sign in and change this password straight away (**My account**), and set your real
+> name, email and phone — they're shown on the forgot-password page.
+
+### 2. Environment variables
+
+| Variable | Value |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Same as `yandnow-backend` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Same as `yandnow-backend` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Same as `yandnow-backend` — server only, never expose |
+| `AUTH_SECRET` | Unique to this panel — `openssl rand -hex 32` |
+| `AUTH_SESSION_TTL` | Optional, login lifetime in seconds (default 7 days) |
+
+### 3. Website
+
+The contact form in the `brobro` site writes directly to `ba_submissions`. Set these in
+`brobro/.env.local`:
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ```
 
-The anon key can only **insert** into `ba_submissions` (only the form columns — it can't
-set `status` or `created_at`) and can never read anything back.
+The anon key can only **insert** form fields. It can't set a status and can't read
+anything back.
 
-### Sending applications
+## Adding an application form
 
-There's no application form on the site yet. When you add one (e.g. a careers form),
-insert a row with `kind: "application"` and fill `position`, `resume_url` (a link to the
-CV), and anything else into `details` (shown as key/value pairs in the panel):
+There's no application form on the site yet. When you build one, post a row with
+`kind: "application"`. Anything extra goes in `details` and is shown in the panel as
+key/value pairs.
 
 ```js
 await fetch(`${SUPABASE_URL}/rest/v1/ba_submissions`, {
@@ -96,28 +100,51 @@ await fetch(`${SUPABASE_URL}/rest/v1/ba_submissions`, {
     position: "Trainer — Future Skills",
     resume_url: "https://…/cv.pdf",
     message: coverLetter,
-    details: { experience_years: "4", city: "Bhopal" },
+    details: { city: "Bhopal" },
     source_page: "/careers",
   }),
 });
 ```
 
-## Who can do what
+## Useful SQL
 
-| | Super admin | Admin |
-| --- | :---: | :---: |
-| View submissions, mark read/new/archived | ✅ | ✅ |
-| Delete submissions | ✅ | — |
-| Edit own name/email/phone, change own password | ✅ | ✅ |
-| Add accounts, reset passwords, disable/enable, delete accounts | ✅ | — |
-| Choose who appears on the forgot-password page | ✅ | — |
+[`supabase/admin-queries.sql`](supabase/admin-queries.sql) has ready-made queries:
+reset a locked-out super admin, hand the super admin role to someone else, list new
+submissions, and clean up old archived ones.
 
-If no one is marked as a reset contact, the forgot-password page shows the super admin.
+Password hashes for manual SQL are generated with:
 
-## Security notes
+```bash
+node scripts/hash-password.mjs 'new-password'
+```
 
-- All pages and `/api/*` routes are gated by `proxy.ts`; every API route re-checks the
-  session **and** the role from the database (defence in depth).
-- Sessions are HMAC-signed `httpOnly` cookies carrying the account's `session_version`;
-  a password reset or disable bumps it, so old cookies stop working instantly.
-- The panel sends `X-Robots-Tag: noindex` on every response.
+## Project layout
+
+```
+app/
+  (app)/submissions    inbox (default page)
+  (app)/accounts       accounts & access — super admin only
+  (app)/account        my account
+  login, forgot-password
+  api/                 route handlers (auth, submissions, accounts, me)
+components/            SubmissionsList, AccountsManager, MyAccount, AdminShell
+lib/site.ts            branding, table names, cookie name
+lib/                   auth, sessions, data access
+proxy.ts               blocks every page and API route until signed in
+supabase/              setup.sql, admin-queries.sql
+```
+
+## Troubleshooting
+
+- **"Couldn't reach the database"** — check `.env.local`, and that `supabase/setup.sql`
+  has been run in the same project.
+- **Locked out of the super admin** — use the first query in `supabase/admin-queries.sql`.
+- **Signed out unexpectedly** — your password was reset or your account was disabled.
+
+## Security
+
+- Every page and API route needs a signed-in session. API routes also re-check the
+  user's role in the database.
+- Sessions are signed, `httpOnly` cookies tied to the account's `session_version`.
+- Passwords are hashed with PBKDF2 (210k iterations).
+- Every response sends `X-Robots-Tag: noindex`.
